@@ -68,9 +68,26 @@ class ChatActivity : AppCompatActivity() {
                 binding.etMessage.text?.clear()
             }
         }
+        binding.btnAttach.setOnClickListener {
+            pickImage.launch(
+                androidx.activity.result.PickVisualMediaRequest(
+                    androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
+                )
+            )
+        }
 
         viewModel.bind(requestId)
+        viewModel.markSeen()
         observe()
+    }
+
+    private val pickImage = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            val b64 = com.fixmateai.utils.ImageUtils.toSmallBase64(this, uri)
+            if (b64 != null) viewModel.sendImage(senderRole, b64) else toast("Couldn't process that image.")
+        }
     }
 
     private fun observe() {
@@ -81,6 +98,8 @@ class ChatActivity : AppCompatActivity() {
                 }
             }
             binding.emptyView.show(messages.isEmpty())
+            // Mark any newly-arrived messages from the other party as seen.
+            viewModel.markSeen()
         }
 
         viewModel.request.observe(this) { request ->

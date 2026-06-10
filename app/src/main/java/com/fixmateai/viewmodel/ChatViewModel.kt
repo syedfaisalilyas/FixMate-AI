@@ -55,6 +55,19 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    /** Sends a Base64 image message. */
+    fun sendImage(senderRole: String, base64: String) {
+        val id = requestId.value ?: return
+        if (base64.isBlank()) return
+        viewModelScope.launch { requestRepository.sendImage(id, senderRole, base64) }
+    }
+
+    /** Marks the other party's messages as seen (called when the chat opens). */
+    fun markSeen() {
+        val id = requestId.value ?: return
+        viewModelScope.launch { requestRepository.markMessagesSeen(id) }
+    }
+
     /** Provider action: change the request status (Accepted/In Progress/Completed). */
     fun updateStatus(status: String) {
         val id = requestId.value ?: return

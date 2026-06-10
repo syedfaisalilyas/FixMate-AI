@@ -43,15 +43,16 @@ class ChatAdapter(
     class SentVH(private val binding: ItemChatSentBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(m: ChatMessage) {
-            binding.tvMessage.text = m.text
+            bindContent(m, binding.tvMessage, binding.ivImage)
             binding.tvTime.text = formatTime(m.timestamp)
+            binding.tvSeen.visibility = if (m.seen) android.view.View.VISIBLE else android.view.View.GONE
         }
     }
 
     class ReceivedVH(private val binding: ItemChatReceivedBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(m: ChatMessage) {
-            binding.tvMessage.text = m.text
+            bindContent(m, binding.tvMessage, binding.ivImage)
             binding.tvTime.text = formatTime(m.timestamp)
         }
     }
@@ -59,6 +60,23 @@ class ChatAdapter(
     companion object {
         private const val TYPE_SENT = 1
         private const val TYPE_RECEIVED = 2
+
+        /** Shows either a text bubble or a decoded image bubble. */
+        private fun bindContent(
+            m: ChatMessage,
+            text: android.widget.TextView,
+            image: android.widget.ImageView
+        ) {
+            if (m.type == ChatMessage.TYPE_IMAGE) {
+                text.visibility = android.view.View.GONE
+                image.visibility = android.view.View.VISIBLE
+                image.setImageBitmap(com.fixmateai.utils.ImageUtils.fromBase64(m.imageBase64))
+            } else {
+                image.visibility = android.view.View.GONE
+                text.visibility = android.view.View.VISIBLE
+                text.text = m.text
+            }
+        }
 
         private val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
         private fun formatTime(ts: Long): String =

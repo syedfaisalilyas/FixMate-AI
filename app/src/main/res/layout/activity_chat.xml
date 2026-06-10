@@ -176,6 +176,16 @@
         android:background="@color/surface"
         android:padding="@dimen/spacing_sm">
 
+        <ImageView
+            android:id="@+id/btnAttach"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_upload"
+            app:tint="@color/brand_primary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/add_photo" />
+
         <EditText
             android:id="@+id/etMessage"
             android:layout_width="0dp"

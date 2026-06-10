@@ -244,6 +244,50 @@ class ServiceRequestRepository @Inject constructor(
         }
     }
 
+    /** Sends a compressed Base64 image as a chat message. */
+    suspend fun sendImage(requestId: String, senderRole: String, base64: String): Resource<Unit> {
+        val userId = uid() ?: return Resource.Error("Not signed in.")
+        return try {
+            val now = System.currentTimeMillis()
+            requests.document(requestId)
+                .collection(Constants.SUBCOLLECTION_CHAT)
+                .add(
+                    ChatMessage(
+                        senderId = userId,
+                        senderRole = senderRole,
+                        type = ChatMessage.TYPE_IMAGE,
+                        imageBase64 = base64,
+                        timestamp = now
+                    )
+                )
+                .await()
+            requests.document(requestId).update("updatedAt", now).await()
+            (getRequest(requestId) as? Resource.Success)?.data?.let {
+                val recipient = if (it.providerId == userId) it.customerId else it.providerId
+                notify(recipient, "New photo", "Sent you a photo", requestId)
+            }
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to send photo.", e)
+        }
+    }
+
+    /** Marks the *other* participant's messages as seen (read receipts). */
+    suspend fun markMessagesSeen(requestId: String) {
+        val userId = uid() ?: return
+        try {
+            val snap = requests.document(requestId)
+                .collection(Constants.SUBCOLLECTION_CHAT)
+                .whereEqualTo("seen", false)
+                .get().await()
+            val batch = firestore.batch()
+            snap.documents.forEach { doc ->
+                if (doc.getString("senderId") != userId) batch.update(doc.reference, "seen", true)
+            }
+            batch.commit().await()
+        } catch (_: Exception) { /* best-effort */ }
+    }
+
     // ---------------- Reviews ----------------
 
     /**

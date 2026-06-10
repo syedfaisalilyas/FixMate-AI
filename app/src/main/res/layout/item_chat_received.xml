@@ -7,6 +7,15 @@
     android:paddingHorizontal="@dimen/spacing_md"
     android:paddingVertical="@dimen/spacing_xs">
 
+    <ImageView
+        android:id="@+id/ivImage"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:background="@drawable/bg_chat_received"
+        android:contentDescription="@string/chat"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/tvMessage"
         android:layout_width="wrap_content"
