@@ -13,6 +13,7 @@ import com.fixmateai.databinding.FragmentProfileBinding
 import com.fixmateai.ui.auth.LoginActivity
 import com.fixmateai.utils.Resource
 import com.fixmateai.utils.loadImage
+import com.fixmateai.utils.show
 import com.fixmateai.utils.toast
 import com.fixmateai.viewmodel.ProfileViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,6 +50,9 @@ class ProfileFragment : Fragment() {
         binding.btnMyHome.setOnClickListener {
             startActivity(Intent(requireContext(), com.fixmateai.ui.home.MyHomeActivity::class.java))
         }
+        binding.btnAdmin.setOnClickListener {
+            startActivity(Intent(requireContext(), com.fixmateai.ui.admin.AdminVerifyActivity::class.java))
+        }
 
         binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
             viewModel.isDarkMode = isChecked
@@ -82,6 +86,7 @@ class ProfileFragment : Fragment() {
                     binding.tvEmail.text = state.data.email
                     binding.tvPhone.text = state.data.phone.ifBlank { "No phone added" }
                     binding.ivAvatar.loadImage(state.data.photoUrl)
+                    binding.btnAdmin.show(state.data.isAdmin)
                 }
                 is Resource.Error -> toast(state.message)
                 else -> Unit

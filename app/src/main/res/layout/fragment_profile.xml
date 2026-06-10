@@ -136,6 +136,18 @@
             app:iconGravity="textStart" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAdmin"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/spacing_md"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:text="@string/verify_providers"
+            android:visibility="gone"
+            app:icon="@drawable/ic_verified"
+            app:iconGravity="textStart" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnMyHome"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"

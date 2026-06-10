@@ -63,6 +63,7 @@
         <activity android:name=".ui.notifications.NotificationsActivity" android:exported="false" />
         <activity android:name=".ui.rewards.RewardsActivity" android:exported="false" />
         <activity android:name=".ui.home.MyHomeActivity" android:exported="false" />
+        <activity android:name=".ui.admin.AdminVerifyActivity" android:exported="false" />
 
         <activity android:name=".ui.diagnosis.CameraActivity" android:exported="false" />
         <activity android:name=".ui.diagnosis.DiagnosisActivity" android:exported="false" />

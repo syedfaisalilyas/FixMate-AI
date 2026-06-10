@@ -150,6 +150,19 @@ class ProviderRepository @Inject constructor(
         }
     }
 
+    /** Admin action: set/unset a provider's verified badge. */
+    suspend fun setVerified(providerId: String, verified: Boolean): Resource<Unit> {
+        return try {
+            firestore.collection(Constants.COLLECTION_PROVIDERS)
+                .document(providerId)
+                .update("verified", verified)
+                .await()
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to update verification.", e)
+        }
+    }
+
     /** Loads the reviews for a provider, newest first. */
     suspend fun getReviews(providerId: String): Resource<List<Review>> {
         return try {

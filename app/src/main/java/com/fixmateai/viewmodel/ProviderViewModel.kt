@@ -132,6 +132,14 @@ class ProviderViewModel @Inject constructor(
         }
     }
 
+    /** Admin: toggle a provider's verified badge, then refresh the directory. */
+    fun setVerified(providerId: String, verified: Boolean) {
+        viewModelScope.launch {
+            providerRepository.setVerified(providerId, verified)
+            _directory.value = providerRepository.getProviders(null)
+        }
+    }
+
     fun logout() {
         prefsManager.clearRole()
         authRepository.logout()
