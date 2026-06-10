@@ -13,6 +13,7 @@ import com.fixmateai.utils.Constants
 import com.fixmateai.utils.Resource
 import com.fixmateai.utils.gone
 import com.fixmateai.utils.show
+import com.fixmateai.utils.toReadableDate
 import com.fixmateai.utils.toast
 import com.fixmateai.viewmodel.ServiceRequestViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,6 +32,7 @@ class CreateRequestActivity : AppCompatActivity() {
     private var provider: ServiceProvider? = null
     private var diagnosisSummary: String = ""
     private var costEstimate: String = ""
+    private var preferredDate: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,15 +63,44 @@ class CreateRequestActivity : AppCompatActivity() {
 
         observe()
 
+        binding.btnPickDate.setOnClickListener { pickDateTime() }
+
         binding.btnSend.setOnClickListener {
             viewModel.createRequest(
                 provider = p,
                 title = binding.etTitle.text.toString(),
                 description = binding.etDescription.text.toString(),
                 diagnosisSummary = diagnosisSummary,
-                costEstimate = costEstimate
+                costEstimate = costEstimate,
+                urgent = binding.switchUrgent.isChecked,
+                preferredDate = preferredDate
             )
         }
+    }
+
+    /** Lets the customer choose a preferred date, then time, for the job. */
+    private fun pickDateTime() {
+        val now = java.util.Calendar.getInstance()
+        android.app.DatePickerDialog(
+            this,
+            { _, year, month, day ->
+                android.app.TimePickerDialog(
+                    this,
+                    { _, hour, minute ->
+                        val cal = java.util.Calendar.getInstance()
+                        cal.set(year, month, day, hour, minute, 0)
+                        preferredDate = cal.timeInMillis
+                        binding.btnPickDate.text = preferredDate.toReadableDate()
+                    },
+                    now.get(java.util.Calendar.HOUR_OF_DAY),
+                    now.get(java.util.Calendar.MINUTE),
+                    false
+                ).show()
+            },
+            now.get(java.util.Calendar.YEAR),
+            now.get(java.util.Calendar.MONTH),
+            now.get(java.util.Calendar.DAY_OF_MONTH)
+        ).apply { datePicker.minDate = now.timeInMillis }.show()
     }
 
     private fun observe() {

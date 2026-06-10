@@ -17,8 +17,13 @@ import com.fixmateai.utils.show
  * trade, rating, city, verified badge and availability.
  */
 class ProviderAdapter(
-    private val onClick: (ServiceProvider) -> Unit
+    private val onClick: (ServiceProvider) -> Unit,
+    private val onFavorite: ((ServiceProvider) -> Unit)? = null
 ) : ListAdapter<ServiceProvider, ProviderAdapter.VH>(DIFF) {
+
+    /** Favourited provider uids + optional distances (uid -> km), set by the fragment. */
+    var favorites: Set<String> = emptySet()
+    var distances: Map<String, Float> = emptyMap()
 
     inner class VH(private val binding: ItemProviderBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -30,6 +35,22 @@ class ProviderAdapter(
             binding.tvRating.text = p.ratingLabel
             binding.tvCity.text = if (p.city.isBlank()) "" else "• ${p.city}"
             binding.ivVerified.show(p.verified)
+
+            // Favourite heart.
+            val isFav = favorites.contains(p.uid)
+            binding.ivFavorite.setImageResource(
+                if (isFav) R.drawable.ic_heart_filled else R.drawable.ic_heart
+            )
+            binding.ivFavorite.setOnClickListener { onFavorite?.invoke(p) }
+
+            // Distance, when known.
+            val km = distances[p.uid]
+            if (km != null) {
+                binding.tvDistance.show(true)
+                binding.tvDistance.text = ctx.getString(R.string.distance_km, km)
+            } else {
+                binding.tvDistance.show(false)
+            }
 
             val available = p.available
             binding.tvAvailability.text =

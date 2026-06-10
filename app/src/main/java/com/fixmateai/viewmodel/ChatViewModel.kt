@@ -55,9 +55,22 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    /** Provider action: change the request status (Accepted/Declined/Completed). */
+    /** Provider action: change the request status (Accepted/In Progress/Completed). */
     fun updateStatus(status: String) {
         val id = requestId.value ?: return
         viewModelScope.launch { requestRepository.updateStatus(id, status) }
+    }
+
+    /** Provider sends a price quote for the job. */
+    fun sendQuote(amount: String) {
+        val id = requestId.value ?: return
+        if (amount.isBlank()) return
+        viewModelScope.launch { requestRepository.sendQuote(id, amount.trim()) }
+    }
+
+    /** Customer accepts the provider's quote. */
+    fun acceptQuote() {
+        val id = requestId.value ?: return
+        viewModelScope.launch { requestRepository.acceptQuote(id) }
     }
 }

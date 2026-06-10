@@ -76,8 +76,13 @@ class ServiceRequestRepository @Inject constructor(
                     trySend(emptyList())
                     return@addSnapshotListener
                 }
+                // Urgent + active first, then most-recently updated.
                 val list = snapshot?.toObjects(ServiceRequest::class.java)
-                    ?.sortedByDescending { it.updatedAt }
+                    ?.sortedWith(
+                        compareByDescending<ServiceRequest> {
+                            it.urgent && it.status == ServiceRequest.STATUS_PENDING
+                        }.thenByDescending { it.updatedAt }
+                    )
                     ?: emptyList()
                 trySend(list)
             }
@@ -123,6 +128,41 @@ class ServiceRequestRepository @Inject constructor(
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to update request.", e)
+        }
+    }
+
+    /** Provider sends a price quote for the job. */
+    suspend fun sendQuote(requestId: String, amount: String): Resource<Unit> {
+        return try {
+            requests.document(requestId)
+                .update(
+                    mapOf(
+                        "quoteAmount" to amount,
+                        "quoteStatus" to ServiceRequest.QUOTE_PENDING,
+                        "updatedAt" to System.currentTimeMillis()
+                    )
+                )
+                .await()
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to send quote.", e)
+        }
+    }
+
+    /** Customer accepts the provider's quote. */
+    suspend fun acceptQuote(requestId: String): Resource<Unit> {
+        return try {
+            requests.document(requestId)
+                .update(
+                    mapOf(
+                        "quoteStatus" to ServiceRequest.QUOTE_ACCEPTED,
+                        "updatedAt" to System.currentTimeMillis()
+                    )
+                )
+                .await()
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to accept quote.", e)
         }
     }
 

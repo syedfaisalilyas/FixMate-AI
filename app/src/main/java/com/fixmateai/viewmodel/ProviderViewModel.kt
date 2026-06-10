@@ -11,6 +11,7 @@ import com.fixmateai.data.model.ServiceRequest
 import com.fixmateai.data.repository.AuthRepository
 import com.fixmateai.data.repository.ProviderRepository
 import com.fixmateai.data.repository.ServiceRequestRepository
+import com.fixmateai.data.repository.UserRepository
 import com.fixmateai.utils.PrefsManager
 import com.fixmateai.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,8 +29,13 @@ class ProviderViewModel @Inject constructor(
     private val providerRepository: ProviderRepository,
     private val requestRepository: ServiceRequestRepository,
     private val authRepository: AuthRepository,
+    private val userRepository: UserRepository,
     private val prefsManager: PrefsManager
 ) : ViewModel() {
+
+    /** The customer's saved provider uids (for the directory heart toggles). */
+    private val _favorites = MutableLiveData<Set<String>>(emptySet())
+    val favorites: LiveData<Set<String>> = _favorites
 
     private val _profile = MutableLiveData<Resource<ServiceProvider>>()
     val profile: LiveData<Resource<ServiceProvider>> = _profile
@@ -81,10 +87,38 @@ class ProviderViewModel @Inject constructor(
         viewModelScope.launch { providerRepository.setAvailability(available) }
     }
 
+    fun setLocation(lat: Double, lng: Double) {
+        viewModelScope.launch {
+            providerRepository.setLocation(lat, lng)
+            loadMyProfile()
+        }
+    }
+
+    fun addPortfolioImage(base64: String) {
+        viewModelScope.launch {
+            providerRepository.addPortfolioImage(base64)
+            loadMyProfile()
+        }
+    }
+
     // --- Customer-facing directory + detail ---
     fun loadDirectory(tradeFilter: String? = null) {
         _directory.value = Resource.Loading
-        viewModelScope.launch { _directory.value = providerRepository.getProviders(tradeFilter) }
+        viewModelScope.launch {
+            _directory.value = providerRepository.getProviders(tradeFilter)
+            // Refresh the favourites set alongside the listing.
+            (userRepository.getProfile() as? Resource.Success)?.data?.let {
+                _favorites.value = it.favorites.toSet()
+            }
+        }
+    }
+
+    /** Toggles a provider in/out of the customer's favourites. */
+    fun toggleFavorite(providerId: String) {
+        val current = _favorites.value ?: emptySet()
+        val nowFav = !current.contains(providerId)
+        _favorites.value = if (nowFav) current + providerId else current - providerId
+        viewModelScope.launch { userRepository.toggleFavorite(providerId, nowFav) }
     }
 
     fun loadProviderDetail(providerId: String) {
@@ -92,6 +126,9 @@ class ProviderViewModel @Inject constructor(
         viewModelScope.launch {
             _providerDetail.value = providerRepository.getProvider(providerId)
             _reviews.value = providerRepository.getReviews(providerId)
+            (userRepository.getProfile() as? Resource.Success)?.data?.let {
+                _favorites.value = it.favorites.toSet()
+            }
         }
     }
 

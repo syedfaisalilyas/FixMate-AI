@@ -72,6 +72,27 @@ class ProviderDetailActivity : AppCompatActivity() {
         if (p.rate.isNotBlank()) parts.add(p.rate)
         if (p.city.isNotBlank()) parts.add(p.city)
         binding.tvMeta.text = parts.joinToString("   •   ")
+
+        bindPortfolio(p)
+        binding.ivFavorite.setOnClickListener { viewModel.toggleFavorite(p.uid) }
+    }
+
+    /** Decodes the provider's Base64 work photos into a horizontal gallery. */
+    private fun bindPortfolio(p: ServiceProvider) {
+        binding.cardPortfolio.show(p.portfolio.isNotEmpty())
+        binding.portfolioContainer.removeAllViews()
+        val size = (110 * resources.displayMetrics.density).toInt()
+        p.portfolio.forEach { b64 ->
+            val bmp = com.fixmateai.utils.ImageUtils.fromBase64(b64) ?: return@forEach
+            val iv = android.widget.ImageView(this).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(size, size).apply {
+                    marginEnd = (8 * resources.displayMetrics.density).toInt()
+                }
+                scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+                setImageBitmap(bmp)
+            }
+            binding.portfolioContainer.addView(iv)
+        }
     }
 
     private fun observe() {
@@ -84,6 +105,12 @@ class ProviderDetailActivity : AppCompatActivity() {
                 reviewAdapter.submitList(state.data)
                 binding.tvNoReviews.show(state.data.isEmpty())
             }
+        }
+        viewModel.favorites.observe(this) { favs ->
+            val fav = provider?.uid?.let { favs.contains(it) } == true
+            binding.ivFavorite.setImageResource(
+                if (fav) R.drawable.ic_heart_filled else R.drawable.ic_heart
+            )
         }
     }
 }

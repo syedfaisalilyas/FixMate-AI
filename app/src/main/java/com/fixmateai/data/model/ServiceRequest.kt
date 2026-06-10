@@ -33,6 +33,14 @@ data class ServiceRequest(
     val status: String = STATUS_PENDING,
     /** True once the customer has left a review for a completed job. */
     val rated: Boolean = false,
+    /** Customer flagged this as urgent (shown first to providers). */
+    val urgent: Boolean = false,
+    /** Optional preferred date/time chosen by the customer (epoch millis, 0 = none). */
+    val preferredDate: Long = 0L,
+    /** Provider's quoted price (blank until a quote is sent). */
+    val quoteAmount: String = "",
+    /** "" | "pending" | "accepted" — state of the provider's quote. */
+    val quoteStatus: String = "",
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L
 ) : Parcelable {
@@ -40,7 +48,14 @@ data class ServiceRequest(
     companion object {
         const val STATUS_PENDING = "Pending"
         const val STATUS_ACCEPTED = "Accepted"
+        const val STATUS_IN_PROGRESS = "In Progress"
         const val STATUS_DECLINED = "Declined"
         const val STATUS_COMPLETED = "Completed"
+
+        const val QUOTE_PENDING = "pending"
+        const val QUOTE_ACCEPTED = "accepted"
+
+        /** Ordered stages for the status-timeline stepper. */
+        val TIMELINE = listOf(STATUS_PENDING, STATUS_ACCEPTED, STATUS_IN_PROGRESS, STATUS_COMPLETED)
     }
 }

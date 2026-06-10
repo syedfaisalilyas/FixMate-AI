@@ -58,7 +58,9 @@ class ServiceRequestViewModel @Inject constructor(
         description: String,
         diagnosisSummary: String = "",
         imageUrl: String = "",
-        costEstimate: String = ""
+        costEstimate: String = "",
+        urgent: Boolean = false,
+        preferredDate: Long = 0L
     ) {
         if (title.isBlank() || description.isBlank()) {
             _createState.value = Resource.Error("Please add a title and description.")
@@ -79,7 +81,9 @@ class ServiceRequestViewModel @Inject constructor(
                 description = description.trim(),
                 diagnosisSummary = diagnosisSummary,
                 imageUrl = imageUrl,
-                aiCostEstimate = costEstimate
+                aiCostEstimate = costEstimate,
+                urgent = urgent,
+                preferredDate = preferredDate
             )
             _createState.value = requestRepository.createRequest(request)
         }
@@ -89,6 +93,8 @@ class ServiceRequestViewModel @Inject constructor(
         _actionState.value = Resource.Loading
         viewModelScope.launch {
             _actionState.value = requestRepository.updateStatus(requestId, status)
+            // Award loyalty points to the customer when a job completes.
+            if (status == ServiceRequest.STATUS_COMPLETED) userRepository.addPoints(20)
         }
     }
 

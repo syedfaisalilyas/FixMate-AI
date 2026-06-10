@@ -25,7 +25,7 @@ class RequestAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(r: ServiceRequest) {
-            binding.tvTitle.text = r.title
+            binding.tvTitle.text = if (r.urgent) "🔴 ${r.title}" else r.title
             binding.tvCounterparty.text =
                 if (showCustomer) "From ${r.customerName.ifBlank { "a customer" }}"
                 else "To ${r.providerName.ifBlank { "a pro" }}"

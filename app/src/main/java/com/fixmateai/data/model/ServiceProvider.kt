@@ -33,10 +33,17 @@ data class ServiceProvider(
     val ratingAvg: Double = 0.0,
     /** Number of reviews that make up [ratingAvg]. */
     val ratingCount: Int = 0,
+    /** Optional location for distance-based directory sorting (0 = unset). */
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
+    /** Up to a few compressed Base64 work photos shown as a gallery. */
+    val portfolio: List<String> = emptyList(),
     val createdAt: Long = 0L
 ) : Parcelable {
 
     /** "4.8 (12)" style label; "New" when there are no reviews yet. */
     val ratingLabel: String
         get() = if (ratingCount == 0) "New" else "%.1f (%d)".format(ratingAvg, ratingCount)
+
+    val hasLocation: Boolean get() = latitude != 0.0 || longitude != 0.0
 }

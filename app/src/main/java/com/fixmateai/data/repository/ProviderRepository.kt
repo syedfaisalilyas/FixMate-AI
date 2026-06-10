@@ -108,6 +108,34 @@ class ProviderRepository @Inject constructor(
         }
     }
 
+    /** Saves the provider's location for distance-based directory sorting. */
+    suspend fun setLocation(latitude: Double, longitude: Double): Resource<Unit> {
+        val id = uid() ?: return Resource.Error("Not signed in.")
+        return try {
+            firestore.collection(Constants.COLLECTION_PROVIDERS)
+                .document(id)
+                .update(mapOf("latitude" to latitude, "longitude" to longitude))
+                .await()
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to save location.", e)
+        }
+    }
+
+    /** Adds a compressed Base64 work photo to the provider's portfolio. */
+    suspend fun addPortfolioImage(base64: String): Resource<Unit> {
+        val id = uid() ?: return Resource.Error("Not signed in.")
+        return try {
+            firestore.collection(Constants.COLLECTION_PROVIDERS)
+                .document(id)
+                .update("portfolio", com.google.firebase.firestore.FieldValue.arrayUnion(base64))
+                .await()
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to add photo.", e)
+        }
+    }
+
     /** Toggles whether the provider is currently accepting new requests. */
     suspend fun setAvailability(available: Boolean): Resource<Unit> {
         val id = uid() ?: return Resource.Error("Not signed in.")

@@ -69,6 +69,16 @@
                         android:src="@drawable/ic_verified"
                         android:contentDescription="@string/verified_badge"
                         android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/ivFavorite"
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:layout_marginStart="10dp"
+                        android:src="@drawable/ic_heart"
+                        app:tint="@color/white"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/saved" />
                 </LinearLayout>
 
                 <TextView
@@ -115,6 +125,44 @@
                         android:layout_marginTop="@dimen/spacing_xs"
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Portfolio gallery -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardPortfolio"
+                style="@style/Widget.FixMate.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/spacing_md"
+                android:layout_marginBottom="@dimen/spacing_md"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_md">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/portfolio"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_sm"
+                        android:scrollbars="none">
+                        <LinearLayout
+                            android:id="@+id/portfolioContainer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal" />
+                    </HorizontalScrollView>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

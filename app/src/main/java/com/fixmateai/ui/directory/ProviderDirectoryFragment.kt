@@ -1,10 +1,15 @@
 package com.fixmateai.ui.directory
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -15,14 +20,14 @@ import com.fixmateai.utils.Constants
 import com.fixmateai.utils.Resource
 import com.fixmateai.utils.show
 import com.fixmateai.utils.toast
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.chip.Chip
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
- * Customer "Find a Pro" directory. Lists signed-up providers with trade filter
- * chips and a client-side name/trade search. Tapping a provider opens their
- * detail page. May be launched with a trade filter pre-selected (from a
- * diagnosis "Send to a Pro" action).
+ * Customer "Find a Pro" directory: trade filter chips (+ a "Saved" filter),
+ * name/trade search, favourite hearts, and distance labels when the device
+ * location is already available. Tapping a provider opens their detail page.
  */
 @AndroidEntryPoint
 class ProviderDirectoryFragment : Fragment() {
@@ -33,16 +38,23 @@ class ProviderDirectoryFragment : Fragment() {
 
     private var allProviders: List<ServiceProvider> = emptyList()
     private var selectedTrade: String? = null
+    private var savedOnly = false
 
-    private val adapter = ProviderAdapter { provider ->
-        val intent = Intent(requireContext(), ProviderDetailActivity::class.java)
-        intent.putExtra(Constants.EXTRA_PROVIDER, provider)
-        // Carry a diagnosis summary forward (set when opened via "Send to a Pro").
-        arguments?.getString(Constants.EXTRA_DIAGNOSIS_SUMMARY)?.let {
-            intent.putExtra(Constants.EXTRA_DIAGNOSIS_SUMMARY, it)
-        }
-        startActivity(intent)
+    private val fusedClient by lazy {
+        LocationServices.getFusedLocationProviderClient(requireContext())
     }
+
+    private val adapter = ProviderAdapter(
+        onClick = { provider ->
+            val intent = Intent(requireContext(), ProviderDetailActivity::class.java)
+            intent.putExtra(Constants.EXTRA_PROVIDER, provider)
+            arguments?.getString(Constants.EXTRA_DIAGNOSIS_SUMMARY)?.let {
+                intent.putExtra(Constants.EXTRA_DIAGNOSIS_SUMMARY, it)
+            }
+            startActivity(intent)
+        },
+        onFavorite = { provider -> viewModel.toggleFavorite(provider.uid) }
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,26 +72,28 @@ class ProviderDirectoryFragment : Fragment() {
         binding.recyclerView.adapter = adapter
         binding.swipeRefresh.setOnRefreshListener { viewModel.loadDirectory() }
 
-        // Optional incoming trade filter (e.g. from a diagnosis).
         selectedTrade = arguments?.getString(Constants.EXTRA_TRADE_FILTER)
 
         buildChips()
         setupSearch()
         observe()
         viewModel.loadDirectory()
+        tryComputeDistances()
     }
 
     private fun buildChips() {
         binding.chipGroup.removeAllViews()
-        val trades = listOf(getString(com.fixmateai.R.string.all_trades)) + Constants.TRADES
-        trades.forEach { label ->
+        val all = getString(com.fixmateai.R.string.all_trades)
+        val saved = getString(com.fixmateai.R.string.saved)
+        val labels = listOf(all, saved) + Constants.TRADES
+        labels.forEach { label ->
             val chip = Chip(requireContext()).apply {
                 text = label
                 isCheckable = true
-                isChecked = (label == selectedTrade) ||
-                    (selectedTrade == null && label == getString(com.fixmateai.R.string.all_trades))
+                isChecked = (selectedTrade == null && !savedOnly && label == all)
                 setOnClickListener {
-                    selectedTrade = if (label == getString(com.fixmateai.R.string.all_trades)) null else label
+                    savedOnly = label == saved
+                    selectedTrade = if (label == all || label == saved) null else label
                     applyFilters()
                 }
             }
@@ -88,15 +102,15 @@ class ProviderDirectoryFragment : Fragment() {
     }
 
     private fun setupSearch() {
-        binding.etSearch.addTextChangedListener(
-            afterTextChanged = { applyFilters() }
-        )
+        binding.etSearch.addTextChangedListener(afterTextChanged = { applyFilters() })
     }
 
     private fun applyFilters() {
         val query = binding.etSearch.text.toString().trim().lowercase()
+        val favs = viewModel.favorites.value ?: emptySet()
         val filtered = allProviders.filter { p ->
             (selectedTrade == null || p.trade == selectedTrade) &&
+                (!savedOnly || favs.contains(p.uid)) &&
                 (query.isBlank() ||
                     p.name.lowercase().contains(query) ||
                     p.trade.lowercase().contains(query))
@@ -119,6 +133,30 @@ class ProviderDirectoryFragment : Fragment() {
                 }
                 else -> Unit
             }
+        }
+        viewModel.favorites.observe(viewLifecycleOwner) { favs ->
+            adapter.favorites = favs
+            adapter.notifyDataSetChanged()
+            if (savedOnly) applyFilters()
+        }
+    }
+
+    /** If location permission is already granted, label providers with distance. */
+    @SuppressLint("MissingPermission")
+    private fun tryComputeDistances() {
+        val granted = ContextCompat.checkSelfPermission(
+            requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!granted) return
+        fusedClient.lastLocation.addOnSuccessListener { loc ->
+            if (loc == null || _binding == null) return@addOnSuccessListener
+            val map = allProviders.filter { it.hasLocation }.associate { p ->
+                val results = FloatArray(1)
+                Location.distanceBetween(loc.latitude, loc.longitude, p.latitude, p.longitude, results)
+                p.uid to (results[0] / 1000f)
+            }
+            adapter.distances = map
+            adapter.notifyDataSetChanged()
         }
     }
 
