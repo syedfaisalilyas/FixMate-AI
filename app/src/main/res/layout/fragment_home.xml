@@ -45,6 +45,65 @@
             android:padding="@dimen/spacing_md"
             android:layout_marginTop="-16dp">
 
+            <!-- Ask FixMate AI banner -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAssistant"
+                style="@style/Widget.FixMate.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_md"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/gradient_header"
+                    android:padding="@dimen/spacing_md">
+
+                    <ImageView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:padding="8dp"
+                        android:background="@drawable/bg_avatar_circle"
+                        android:src="@drawable/ic_robot"
+                        android:contentDescription="@string/ask_fixmate" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_md"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ask_fixmate"
+                            android:textColor="@color/text_on_brand"
+                            android:textSize="17sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ask_fixmate_sub"
+                            android:textColor="@color/text_on_brand_muted"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:rotation="180"
+                        android:src="@drawable/ic_back"
+                        app:tint="@color/text_on_brand"
+                        android:contentDescription="@string/ask_fixmate" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Row 1: Capture + Upload -->
             <LinearLayout
                 android:layout_width="match_parent"

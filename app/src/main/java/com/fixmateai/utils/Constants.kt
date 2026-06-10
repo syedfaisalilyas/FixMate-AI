@@ -80,8 +80,12 @@ object Constants {
           "requiredTools": ["tool 1", "tool 2"],
           "safetyWarnings": ["warning 1", "warning 2"],
           "suggestedTradesperson": "plumber | electrician | carpenter | general handyman | etc.",
-          "summary": "one sentence plain-language summary"
+          "summary": "one sentence plain-language summary",
+          "steps": ["short DIY step 1", "short DIY step 2", "..."],
+          "canDiy": true
         }
+        "steps" must be a concise ordered list a homeowner can follow. Set "canDiy"
+        to true only if a confident DIYer could safely do it without a licensed pro.
         If the image does not show repairable home damage, set damageType to
         "No damage detected" and explain in the summary.
     """.trimIndent()

@@ -171,4 +171,52 @@
 
     <!-- Diagnosis → pro -->
     <string name="send_to_pro">Send to a Pro</string>
+
+    <!-- AI assistant -->
+    <string name="ask_fixmate">Ask FixMate AI</string>
+    <string name="ask_fixmate_sub">Chat with our repair assistant</string>
+    <string name="repair_steps">Step-by-step Repair</string>
+    <string name="diy_friendly_title">You can likely DIY this 🛠</string>
+    <string name="diy_friendly_sub">Follow the steps below, or ask FixMate for help.</string>
+    <string name="hire_pro_title">Best left to a professional</string>
+    <string name="hire_pro_sub">This looks tricky or unsafe — hire a verified pro.</string>
+
+    <!-- Marketplace depth -->
+    <string name="in_progress">In Progress</string>
+    <string name="urgent">URGENT</string>
+    <string name="mark_urgent">Mark as urgent</string>
+    <string name="preferred_time">Preferred date &amp; time</string>
+    <string name="pick_datetime">Pick a date &amp; time</string>
+    <string name="send_quote">Send Quote</string>
+    <string name="quote_amount">Quote amount</string>
+    <string name="quote_label">Quote: %1$s</string>
+    <string name="accept_quote">Accept Quote</string>
+    <string name="quote_accepted">Quote accepted</string>
+    <string name="start_job">Start Job</string>
+    <string name="portfolio">Recent Work</string>
+    <string name="add_photo">Add Photo</string>
+    <string name="saved">Saved</string>
+    <string name="distance_km">%1$.1f km away</string>
+
+    <!-- Engagement -->
+    <string name="notifications">Notifications</string>
+    <string name="no_notifications">You\'re all caught up 🎉</string>
+    <string name="rewards">Rewards</string>
+    <string name="your_points">Your points</string>
+    <string name="referral_code">Your referral code</string>
+    <string name="points_value">%1$d pts</string>
+
+    <!-- Utility -->
+    <string name="my_home">My Home</string>
+    <string name="add_item">Add Item</string>
+    <string name="no_home_items">Add your appliances to track repairs &amp; warranties.</string>
+    <string name="warranty_until">Warranty until %1$s</string>
+    <string name="warranty_expiring">Warranty expiring soon</string>
+    <string name="maintenance_tips">Seasonal Tips</string>
+    <string name="export_pdf">Export PDF</string>
+    <string name="verify_providers">Verify Providers</string>
+    <string name="verified_toggle">Verified</string>
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="get_started">Get Started</string>
 </resources>

@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.fixmateai.R
 import com.fixmateai.databinding.FragmentHomeBinding
+import com.fixmateai.ui.assistant.ChatbotActivity
 import com.fixmateai.ui.diagnosis.CameraActivity
 import com.fixmateai.ui.diagnosis.DiagnosisActivity
 import com.fixmateai.ui.history.HistoryActivity
@@ -34,6 +35,11 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Ask FixMate AI chatbot.
+        binding.cardAssistant.setOnClickListener {
+            startActivity(Intent(requireContext(), ChatbotActivity::class.java))
+        }
 
         // Capture a new photo with CameraX.
         binding.cardCamera.setOnClickListener {

@@ -215,11 +215,46 @@ class DiagnosisActivity : AppCompatActivity() {
         binding.tvTools.text = d.toolsText
         binding.tvSafety.text = d.safetyText
 
+        bindVerdict(d)
+        bindSteps(d)
+
         // Enable actions now that we have a result.
         binding.btnSendToPro.show(true)
         binding.btnSave.show(true)
         binding.btnGenerateMessage.show(true)
         binding.btnReanalyze.show(true)
+    }
+
+    /** DIY-vs-hire banner derived from the AI's canDiy flag + severity. */
+    private fun bindVerdict(d: DiagnosisResult) {
+        val diy = d.isDiyFriendly
+        binding.verdictBanner.visible()
+        binding.verdictBanner.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            androidx.core.content.ContextCompat.getColor(
+                this, if (diy) com.fixmateai.R.color.success_light else com.fixmateai.R.color.warning_light
+            )
+        )
+        binding.tvVerdictTitle.setText(
+            if (diy) com.fixmateai.R.string.diy_friendly_title else com.fixmateai.R.string.hire_pro_title
+        )
+        binding.tvVerdictSub.setText(
+            if (diy) com.fixmateai.R.string.diy_friendly_sub else com.fixmateai.R.string.hire_pro_sub
+        )
+    }
+
+    /** Renders the AI's DIY steps as a tickable checklist. */
+    private fun bindSteps(d: DiagnosisResult) {
+        binding.stepsContainer.removeAllViews()
+        val steps = d.stepsList
+        binding.headerSteps.show(steps.isNotEmpty())
+        steps.forEachIndexed { index, step ->
+            val cb = com.google.android.material.checkbox.MaterialCheckBox(this).apply {
+                text = "${index + 1}. $step"
+                textSize = 14f
+                setPadding(0, 8, 0, 8)
+            }
+            binding.stepsContainer.addView(cb)
+        }
     }
 
     private fun resetServiceCard() {
