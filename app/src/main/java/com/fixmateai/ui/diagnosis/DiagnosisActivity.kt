@@ -107,6 +107,28 @@ class DiagnosisActivity : AppCompatActivity() {
         binding.btnDraftMessage.setOnClickListener {
             openMessageGenerator(store = suggestedStore)
         }
+        binding.btnSendToPro.setOnClickListener { openProviderDirectory() }
+    }
+
+    /**
+     * Opens the in-app provider directory pre-filtered to the AI's suggested
+     * trade, carrying the diagnosis summary forward so the request is pre-filled.
+     */
+    private fun openProviderDirectory() {
+        val diagnosis = currentDiagnosis ?: return
+        val intent = Intent(this, com.fixmateai.ui.directory.ProviderDirectoryActivity::class.java)
+        intent.putExtra(Constants.EXTRA_TRADE_FILTER, matchTrade(diagnosis.tradespersonOrDefault))
+        intent.putExtra(Constants.EXTRA_DIAGNOSIS_SUMMARY, diagnosis.summaryOrDefault)
+        startActivity(intent)
+    }
+
+    /** Maps the AI's free-text tradesperson to one of our known trade labels. */
+    private fun matchTrade(suggested: String): String? {
+        val s = suggested.lowercase()
+        return Constants.TRADES.firstOrNull { trade ->
+            val key = trade.lowercase()
+            s.contains(key) || key.contains(s)
+        }
     }
 
     private fun openMessageGenerator(store: NearbyStore?) {
@@ -194,6 +216,7 @@ class DiagnosisActivity : AppCompatActivity() {
         binding.tvSafety.text = d.safetyText
 
         // Enable actions now that we have a result.
+        binding.btnSendToPro.show(true)
         binding.btnSave.show(true)
         binding.btnGenerateMessage.show(true)
         binding.btnReanalyze.show(true)

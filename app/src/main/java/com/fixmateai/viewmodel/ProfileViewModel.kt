@@ -55,5 +55,8 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun logout() = authRepository.logout()
+    fun logout() {
+        prefsManager.clearRole()
+        authRepository.logout()
+    }
 }

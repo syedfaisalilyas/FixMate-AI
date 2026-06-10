@@ -22,8 +22,20 @@ class PrefsManager @Inject constructor(
         get() = prefs.getBoolean(KEY_DARK_MODE, false)
         set(value) = prefs.edit().putBoolean(KEY_DARK_MODE, value).apply()
 
+    /**
+     * Cached account role ("customer" / "provider") so the splash screen can route
+     * instantly without waiting on a Firestore read. Refreshed at login/sign-up.
+     */
+    var userRole: String
+        get() = prefs.getString(KEY_USER_ROLE, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_USER_ROLE, value).apply()
+
+    /** Clears the cached role (used on logout/delete). */
+    fun clearRole() = prefs.edit().remove(KEY_USER_ROLE).apply()
+
     companion object {
         private const val PREFS_NAME = "fixmate_prefs"
         private const val KEY_DARK_MODE = "key_dark_mode"
+        private const val KEY_USER_ROLE = "key_user_role"
     }
 }

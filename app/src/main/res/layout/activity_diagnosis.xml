@@ -214,10 +214,21 @@
                 android:visibility="gone" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnGenerateMessage"
+                android:id="@+id/btnSendToPro"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_md"
+                android:text="@string/send_to_pro"
+                app:icon="@drawable/ic_pro"
+                app:iconGravity="textStart"
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGenerateMessage"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
                 android:text="@string/generate_message"
                 android:visibility="gone" />
 

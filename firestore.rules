@@ -1,7 +1,8 @@
 rules_version = '2';
 
 // Firebase Firestore security rules for FixMate AI.
-// Each user can only read/write their own data.
+// Customers own their data; providers are publicly browsable; service requests
+// and their chat are shared between the customer and the provider on the doc.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -18,12 +19,48 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid;
     }
 
-    // Messages: owner-only access.
+    // Outreach messages (generated drafts): owner-only access.
     match /messages/{messageId} {
       allow read, delete, update: if request.auth != null
         && resource.data.userId == request.auth.uid;
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Provider profiles: any signed-in user can read them (the directory);
+    // only the provider can create/update their own document.
+    match /providers/{providerId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == providerId;
+      // Allow the rating aggregate to be updated inside a review transaction by
+      // the reviewing customer (only the rating fields may change).
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['ratingAvg', 'ratingCount']);
+    }
+
+    // Service requests: readable/updatable by the customer or the provider on
+    // the document; only the customer can create it.
+    match /service_requests/{requestId} {
+      allow read, update: if request.auth != null
+        && (resource.data.customerId == request.auth.uid
+            || resource.data.providerId == request.auth.uid);
+      allow create: if request.auth != null
+        && request.resource.data.customerId == request.auth.uid;
+
+      // Chat messages: accessible to either participant of the parent request.
+      match /messages/{messageId} {
+        allow read, create: if request.auth != null
+          && (get(/databases/$(database)/documents/service_requests/$(requestId)).data.customerId == request.auth.uid
+              || get(/databases/$(database)/documents/service_requests/$(requestId)).data.providerId == request.auth.uid);
+      }
+    }
+
+    // Reviews: any signed-in user can read; only the reviewing customer creates.
+    match /reviews/{reviewId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.customerId == request.auth.uid;
     }
   }
 }

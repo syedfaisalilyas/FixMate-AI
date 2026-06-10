@@ -6,9 +6,11 @@ import android.os.Handler
 import android.os.Looper
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.fixmateai.data.model.User
 import com.fixmateai.databinding.ActivitySplashBinding
 import com.fixmateai.ui.auth.LoginActivity
 import com.fixmateai.ui.home.HomeActivity
+import com.fixmateai.ui.provider.ProviderHomeActivity
 import com.fixmateai.viewmodel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -30,12 +32,13 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Hold the branded splash briefly, then route to the right destination.
+        // Hold the branded splash briefly, then route to the right destination
+        // based on the signed-in session and the cached account role.
         Handler(Looper.getMainLooper()).postDelayed({
-            val destination = if (authViewModel.isLoggedIn()) {
-                HomeActivity::class.java
-            } else {
-                LoginActivity::class.java
+            val destination = when {
+                !authViewModel.isLoggedIn() -> LoginActivity::class.java
+                authViewModel.cachedRole() == User.ROLE_PROVIDER -> ProviderHomeActivity::class.java
+                else -> HomeActivity::class.java
             }
             startActivity(Intent(this, destination))
             finish()

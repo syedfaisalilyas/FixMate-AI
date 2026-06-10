@@ -1,5 +1,6 @@
 package com.fixmateai.ui.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,10 +10,13 @@ import com.fixmateai.R
 import com.fixmateai.databinding.FragmentHomeBinding
 import com.fixmateai.ui.diagnosis.CameraActivity
 import com.fixmateai.ui.diagnosis.DiagnosisActivity
+import com.fixmateai.ui.history.HistoryActivity
+import com.fixmateai.ui.stores.StoresActivity
 
 /**
- * Dashboard fragment. Provides the main entry points: capture a photo, upload
- * from gallery, view previous reports, and find nearby repair shops.
+ * Customer dashboard fragment. Entry points: capture/upload a photo for AI
+ * diagnosis, find a pro, view requests, view previous reports, and browse nearby
+ * repair shops.
  */
 class HomeFragment : Fragment() {
 
@@ -33,24 +37,34 @@ class HomeFragment : Fragment() {
 
         // Capture a new photo with CameraX.
         binding.cardCamera.setOnClickListener {
-            startActivity(android.content.Intent(requireContext(), CameraActivity::class.java))
+            startActivity(Intent(requireContext(), CameraActivity::class.java))
         }
 
         // Open the diagnosis screen in "gallery pick" mode.
         binding.cardUpload.setOnClickListener {
-            val intent = android.content.Intent(requireContext(), DiagnosisActivity::class.java)
+            val intent = Intent(requireContext(), DiagnosisActivity::class.java)
             intent.putExtra(DiagnosisActivity.EXTRA_PICK_GALLERY, true)
             startActivity(intent)
         }
 
-        // Jump to the History tab.
-        binding.cardReports.setOnClickListener {
-            (activity as? HomeActivity)?.selectTab(R.id.nav_history)
+        // Jump to the Find Pros tab.
+        binding.cardFindPro.setOnClickListener {
+            (activity as? HomeActivity)?.selectTab(R.id.nav_pros)
         }
 
-        // Jump to the Nearby Stores tab.
+        // Jump to the Requests tab.
+        binding.cardMyRequests.setOnClickListener {
+            (activity as? HomeActivity)?.selectTab(R.id.nav_requests)
+        }
+
+        // Open previous reports (History) as a dedicated screen.
+        binding.cardReports.setOnClickListener {
+            startActivity(Intent(requireContext(), HistoryActivity::class.java))
+        }
+
+        // Open the Google-Places nearby shops as a dedicated screen.
         binding.cardStores.setOnClickListener {
-            (activity as? HomeActivity)?.selectTab(R.id.nav_stores)
+            startActivity(Intent(requireContext(), StoresActivity::class.java))
         }
     }
 

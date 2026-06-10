@@ -12,5 +12,16 @@ data class User(
     val email: String = "",
     val phone: String = "",
     val photoUrl: String = "",
+    /**
+     * Account type: [ROLE_CUSTOMER] (homeowner who diagnoses repairs) or
+     * [ROLE_PROVIDER] (tradesperson who receives and answers service requests).
+     * Chosen at sign-up and used to route the user to the correct dashboard.
+     */
+    val role: String = ROLE_CUSTOMER,
     val createdAt: Long = 0L
-)
+) {
+    companion object {
+        const val ROLE_CUSTOMER = "customer"
+        const val ROLE_PROVIDER = "provider"
+    }
+}
