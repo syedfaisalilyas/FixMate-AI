@@ -6,13 +6,19 @@ import android.os.Handler
 import android.os.Looper
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import com.fixmateai.data.model.User
 import com.fixmateai.databinding.ActivitySplashBinding
 import com.fixmateai.ui.auth.LoginActivity
 import com.fixmateai.ui.home.HomeActivity
+import com.fixmateai.ui.onboarding.OnboardingActivity
 import com.fixmateai.ui.provider.ProviderHomeActivity
+import com.fixmateai.utils.PrefsManager
 import com.fixmateai.viewmodel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * Branded launch screen. Shows the FixMate logo and tagline for a short moment,
@@ -26,6 +32,7 @@ class SplashActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashBinding
     private val authViewModel: AuthViewModel by viewModels()
+    @Inject lateinit var prefs: PrefsManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,17 +41,65 @@ class SplashActivity : AppCompatActivity() {
 
         animateEntrance()
 
-        // Hold the branded splash briefly, then route to the right destination
-        // based on the signed-in session and the cached account role.
-        Handler(Looper.getMainLooper()).postDelayed({
-            val destination = when {
-                !authViewModel.isLoggedIn() -> LoginActivity::class.java
-                authViewModel.cachedRole() == User.ROLE_PROVIDER -> ProviderHomeActivity::class.java
-                else -> HomeActivity::class.java
+        Handler(Looper.getMainLooper()).postDelayed({ decideNext() }, SPLASH_DELAY_MS)
+    }
+
+    private fun decideNext() {
+        when {
+            !authViewModel.isLoggedIn() && !prefs.onboarded ->
+                go(OnboardingActivity::class.java)
+            !authViewModel.isLoggedIn() ->
+                go(LoginActivity::class.java)
+            prefs.biometricEnabled && canUseBiometric() ->
+                promptBiometric()
+            else -> routeSignedIn()
+        }
+    }
+
+    private fun routeSignedIn() {
+        val destination = if (authViewModel.cachedRole() == User.ROLE_PROVIDER) {
+            ProviderHomeActivity::class.java
+        } else {
+            HomeActivity::class.java
+        }
+        go(destination)
+    }
+
+    private fun go(target: Class<*>) {
+        startActivity(Intent(this, target))
+        finish()
+    }
+
+    private fun canUseBiometric(): Boolean =
+        BiometricManager.from(this).canAuthenticate(
+            BiometricManager.Authenticators.BIOMETRIC_WEAK or
+                BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        ) == BiometricManager.BIOMETRIC_SUCCESS
+
+    private fun promptBiometric() {
+        val prompt = BiometricPrompt(
+            this,
+            ContextCompat.getMainExecutor(this),
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    routeSignedIn()
+                }
+                // On error/cancel, fall through so the user is never locked out.
+                override fun onAuthenticationError(code: Int, msg: CharSequence) {
+                    routeSignedIn()
+                }
             }
-            startActivity(Intent(this, destination))
-            finish()
-        }, SPLASH_DELAY_MS)
+        )
+        prompt.authenticate(
+            BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Unlock FixMate")
+                .setSubtitle("Confirm it's you")
+                .setAllowedAuthenticators(
+                    BiometricManager.Authenticators.BIOMETRIC_WEAK or
+                        BiometricManager.Authenticators.DEVICE_CREDENTIAL
+                )
+                .build()
+        )
     }
 
     /** Gentle scale + fade-in for the logo and wordmark. */

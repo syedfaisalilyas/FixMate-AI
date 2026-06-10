@@ -58,6 +58,11 @@ class ProfileFragment : Fragment() {
             )
         }
 
+        binding.switchBiometric.isChecked = viewModel.biometricEnabled
+        binding.switchBiometric.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.biometricEnabled = isChecked
+        }
+
         binding.btnLogout.setOnClickListener { confirmLogout() }
         binding.btnDeleteAccount.setOnClickListener { confirmDelete() }
 

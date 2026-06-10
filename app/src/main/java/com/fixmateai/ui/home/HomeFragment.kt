@@ -88,6 +88,11 @@ class HomeFragment : Fragment() {
         binding.cardStores.setOnClickListener {
             startActivity(Intent(requireContext(), StoresActivity::class.java))
         }
+
+        // Seasonal maintenance tip of the day.
+        val (season, tip) = com.fixmateai.utils.MaintenanceTips.tipOfTheDay()
+        binding.tvTipSeason.text = "$season tip"
+        binding.tvTip.text = tip
     }
 
     override fun onDestroyView() {

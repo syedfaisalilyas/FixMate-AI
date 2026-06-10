@@ -34,6 +34,10 @@ class ProfileViewModel @Inject constructor(
         get() = prefsManager.isDarkMode
         set(value) { prefsManager.isDarkMode = value }
 
+    var biometricEnabled: Boolean
+        get() = prefsManager.biometricEnabled
+        set(value) { prefsManager.biometricEnabled = value }
+
     fun loadProfile() {
         _profile.value = Resource.Loading
         viewModelScope.launch {
