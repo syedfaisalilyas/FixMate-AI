@@ -32,6 +32,8 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        animateEntrance()
+
         // Hold the branded splash briefly, then route to the right destination
         // based on the signed-in session and the cached account role.
         Handler(Looper.getMainLooper()).postDelayed({
@@ -43,6 +45,27 @@ class SplashActivity : AppCompatActivity() {
             startActivity(Intent(this, destination))
             finish()
         }, SPLASH_DELAY_MS)
+    }
+
+    /** Gentle scale + fade-in for the logo and wordmark. */
+    private fun animateEntrance() {
+        binding.ivLogo.apply {
+            alpha = 0f
+            scaleX = 0.7f
+            scaleY = 0.7f
+            animate().alpha(1f).scaleX(1f).scaleY(1f)
+                .setDuration(650L).start()
+        }
+        binding.tvAppName.apply {
+            alpha = 0f
+            translationY = 40f
+            animate().alpha(1f).translationY(0f).setStartDelay(250L)
+                .setDuration(550L).start()
+        }
+        binding.tvTagline.apply {
+            alpha = 0f
+            animate().alpha(1f).setStartDelay(500L).setDuration(550L).start()
+        }
     }
 
     companion object {
