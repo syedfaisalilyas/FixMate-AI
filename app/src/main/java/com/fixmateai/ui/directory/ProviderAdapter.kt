@@ -31,7 +31,13 @@ class ProviderAdapter(
         fun bind(p: ServiceProvider) {
             val ctx = binding.root.context
             binding.tvName.text = p.name
-            binding.tvTrade.text = p.trade
+            // Computed activity badge alongside the trade.
+            val badge = when {
+                p.ratingAvg >= 4.5 && p.ratingCount >= 3 -> "  •  ⭐ Top rated"
+                p.ratingCount == 0 -> "  •  ✨ New"
+                else -> ""
+            }
+            binding.tvTrade.text = "${p.trade}$badge"
             binding.tvRating.text = p.ratingLabel
             binding.tvCity.text = if (p.city.isBlank()) "" else "• ${p.city}"
             binding.ivVerified.show(p.verified)

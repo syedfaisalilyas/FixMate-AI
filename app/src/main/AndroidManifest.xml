@@ -59,6 +59,9 @@
         <activity android:name=".ui.provider.ProviderEditProfileActivity" android:exported="false" />
 
         <activity android:name=".ui.assistant.ChatbotActivity" android:exported="false" />
+        <activity android:name=".ui.notifications.NotificationsActivity" android:exported="false" />
+        <activity android:name=".ui.rewards.RewardsActivity" android:exported="false" />
+        <activity android:name=".ui.home.MyHomeActivity" android:exported="false" />
 
         <activity android:name=".ui.diagnosis.CameraActivity" android:exported="false" />
         <activity android:name=".ui.diagnosis.DiagnosisActivity" android:exported="false" />

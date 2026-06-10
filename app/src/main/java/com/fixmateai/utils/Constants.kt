@@ -13,6 +13,8 @@ object Constants {
     const val COLLECTION_PROVIDERS = "providers"
     const val COLLECTION_REQUESTS = "service_requests"
     const val COLLECTION_REVIEWS = "reviews"
+    const val COLLECTION_NOTIFICATIONS = "notifications"
+    const val COLLECTION_HOME_ITEMS = "home_items"
     // Chat lives in a subcollection of each service request document.
     const val SUBCOLLECTION_CHAT = "messages"
 

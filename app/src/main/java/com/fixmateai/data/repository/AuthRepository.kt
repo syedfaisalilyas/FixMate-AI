@@ -52,6 +52,8 @@ class AuthRepository @Inject constructor(
                 name = name,
                 email = email,
                 role = role,
+                referralCode = "FIX-" + firebaseUser.uid.takeLast(5).uppercase(),
+                points = 50, // welcome bonus
                 createdAt = now
             )
             firestore.collection(Constants.COLLECTION_USERS)

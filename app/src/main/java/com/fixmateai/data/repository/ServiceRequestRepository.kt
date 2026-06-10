@@ -33,6 +33,22 @@ class ServiceRequestRepository @Inject constructor(
 
     private val requests get() = firestore.collection(Constants.COLLECTION_REQUESTS)
 
+    /** Best-effort write of an in-app notification for [recipientId]. */
+    private suspend fun notify(recipientId: String, title: String, body: String, requestId: String) {
+        if (recipientId.isBlank()) return
+        try {
+            firestore.collection(Constants.COLLECTION_NOTIFICATIONS).add(
+                com.fixmateai.data.model.AppNotification(
+                    recipientId = recipientId,
+                    title = title,
+                    body = body,
+                    requestId = requestId,
+                    timestamp = System.currentTimeMillis()
+                )
+            ).await()
+        } catch (_: Exception) { /* notifications are best-effort */ }
+    }
+
     /** Creates a new service request addressed to a provider. */
     suspend fun createRequest(request: ServiceRequest): Resource<String> {
         val userId = uid() ?: return Resource.Error("Not signed in.")
@@ -47,6 +63,12 @@ class ServiceRequestRepository @Inject constructor(
                 updatedAt = now
             )
             docRef.set(toSave).await()
+            notify(
+                toSave.providerId,
+                "New service request",
+                "${toSave.customerName.ifBlank { "A customer" }}: ${toSave.title}",
+                docRef.id
+            )
             Resource.Success(docRef.id)
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to send request.", e)
@@ -114,7 +136,7 @@ class ServiceRequestRepository @Inject constructor(
         }
     }
 
-    /** Updates a request's status (Accepted / Declined / Completed). */
+    /** Updates a request's status (Accepted / In Progress / Declined / Completed). */
     suspend fun updateStatus(requestId: String, status: String): Resource<Unit> {
         return try {
             requests.document(requestId)
@@ -125,6 +147,9 @@ class ServiceRequestRepository @Inject constructor(
                     )
                 )
                 .await()
+            (getRequest(requestId) as? Resource.Success)?.data?.let {
+                notify(it.customerId, "Request $status", it.title, requestId)
+            }
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to update request.", e)
@@ -143,6 +168,9 @@ class ServiceRequestRepository @Inject constructor(
                     )
                 )
                 .await()
+            (getRequest(requestId) as? Resource.Success)?.data?.let {
+                notify(it.customerId, "New quote: $amount", it.title, requestId)
+            }
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to send quote.", e)
@@ -160,6 +188,9 @@ class ServiceRequestRepository @Inject constructor(
                     )
                 )
                 .await()
+            (getRequest(requestId) as? Resource.Success)?.data?.let {
+                notify(it.providerId, "Quote accepted", it.title, requestId)
+            }
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to accept quote.", e)
@@ -201,6 +232,12 @@ class ServiceRequestRepository @Inject constructor(
                 .add(message)
                 .await()
             requests.document(requestId).update("updatedAt", now).await()
+            // Notify the other participant.
+            (getRequest(requestId) as? Resource.Success)?.data?.let {
+                val recipient = if (it.providerId == userId) it.customerId else it.providerId
+                val from = if (it.providerId == userId) it.providerName else it.customerName
+                notify(recipient, "New message", "${from.ifBlank { "Someone" }}: $text", requestId)
+            }
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to send message.", e)
@@ -251,6 +288,7 @@ class ServiceRequestRepository @Inject constructor(
                 )
                 txn.update(requestRef, "rated", true)
             }.await()
+            notify(request.providerId, "New review ★$rating", customerName.ifBlank { "A customer" }, request.id)
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to submit review.", e)

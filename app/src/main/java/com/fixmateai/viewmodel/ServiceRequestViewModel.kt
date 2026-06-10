@@ -107,7 +107,9 @@ class ServiceRequestViewModel @Inject constructor(
         viewModelScope.launch {
             val profile = userRepository.getProfile()
             val name = (profile as? Resource.Success)?.data?.name.orEmpty()
-            _reviewState.value = requestRepository.submitReview(request, rating, comment.trim(), name)
+            val result = requestRepository.submitReview(request, rating, comment.trim(), name)
+            if (result is Resource.Success) userRepository.addPoints(30)
+            _reviewState.value = result
         }
     }
 }

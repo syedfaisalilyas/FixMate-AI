@@ -43,6 +43,12 @@ class ProfileFragment : Fragment() {
         binding.btnEditProfile.setOnClickListener {
             startActivity(Intent(requireContext(), EditProfileActivity::class.java))
         }
+        binding.btnRewards.setOnClickListener {
+            startActivity(Intent(requireContext(), com.fixmateai.ui.rewards.RewardsActivity::class.java))
+        }
+        binding.btnMyHome.setOnClickListener {
+            startActivity(Intent(requireContext(), com.fixmateai.ui.home.MyHomeActivity::class.java))
+        }
 
         binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
             viewModel.isDarkMode = isChecked

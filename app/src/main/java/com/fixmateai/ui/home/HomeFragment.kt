@@ -6,23 +6,30 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.fixmateai.R
 import com.fixmateai.databinding.FragmentHomeBinding
 import com.fixmateai.ui.assistant.ChatbotActivity
 import com.fixmateai.ui.diagnosis.CameraActivity
 import com.fixmateai.ui.diagnosis.DiagnosisActivity
 import com.fixmateai.ui.history.HistoryActivity
+import com.fixmateai.ui.notifications.NotificationsActivity
 import com.fixmateai.ui.stores.StoresActivity
+import com.fixmateai.utils.show
+import com.fixmateai.viewmodel.NotificationViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Customer dashboard fragment. Entry points: capture/upload a photo for AI
  * diagnosis, find a pro, view requests, view previous reports, and browse nearby
  * repair shops.
  */
+@AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+    private val notificationViewModel: NotificationViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,6 +42,15 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Notification center + live unread badge.
+        binding.btnNotifications.setOnClickListener {
+            startActivity(Intent(requireContext(), NotificationsActivity::class.java))
+        }
+        notificationViewModel.unreadCount.observe(viewLifecycleOwner) { count ->
+            binding.tvBadge.show(count > 0)
+            binding.tvBadge.text = if (count > 9) "9+" else count.toString()
+        }
 
         // Ask FixMate AI chatbot.
         binding.cardAssistant.setOnClickListener {
