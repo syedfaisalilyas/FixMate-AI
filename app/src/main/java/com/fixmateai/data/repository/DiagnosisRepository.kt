@@ -129,6 +129,15 @@ class DiagnosisRepository @Inject constructor(
         )
         if (!response.isSuccessful) {
             val code = response.code()
+            if (code == 401) {
+                return Resource.Error(
+                    "Your Groq API key is invalid or expired. Get a free key at " +
+                        "console.groq.com/keys and set GROQ_API_KEY in local.properties."
+                )
+            }
+            if (code == 429) {
+                return Resource.Error("Groq rate limit reached. Please wait a moment and try again.")
+            }
             val errorBody = response.errorBody()?.string().orEmpty()
             return Resource.Error("AI request failed ($code). $errorBody".trim())
         }
